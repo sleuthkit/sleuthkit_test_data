@@ -9,5 +9,11 @@ unpack:
 clean:
 	@find . -name '*.zip' -print0 | while IFS= read -r -d '' zipfile; do \
 		echo "Cleaning files from $$zipfile"; \
-		(cd "$$(dirname "$$zipfile")" && unzip -Z1 "$$(basename "$$zipfile")" | xargs -I {} rm -f "{}"); \
-	done
+		(cd "$$(dirname "$$zipfile")" && unzip -Z1 "$$(basename "$$zipfile")" | \
+			sed 's|^\./||' | sort -r | \
+			while IFS= read -r entry; do \
+				if [ -e "$$entry" ] || [ -d "$$entry" ]; then \
+					rm -rf -- "$$entry" 2>/dev/null || true; \
+				fi; \
+			done); \
+	done || true
